@@ -23,40 +23,56 @@ const toolbarOptions = [
 ];
 
 function TextEditor() {
-
   const [socket, setSocket] = useState();
   const [quill, setQuill] = useState();
 
   //for making connection with server
-  useEffect(()=>{
-    const s=io("http://localhost:3001");
+  useEffect(() => {
+    const s = io("http://localhost:3001");
     setSocket(s);
-    return()=>{
+    return () => {
       s.disconnect();
-    }
-  },[]);
+    };
+  }, []);
+
+  //for updating contents through recieved-changes event
+  useEffect(() => {
+    if (socket == null || quill == null) return;
+
+    const handler = (delta) => {
+      quill.updateContents(delta);
+    };
+    socket.on("recieve-changes", handler);
+
+    return () => {
+      socket.off("recieve-changes", handler);
+    };
+  }, [socket, quill]);
 
   //for persisting change on files with same users
-  useEffect(()=>{
-    if(socket==null || quill ==null) return;
+  useEffect(() => {
+    if (socket == null || quill == null) return;
 
     const handler = (delta, oldDelta, source) => {
-      if(source!=='user') return;
-      socket.emit('send-changes',delta);
+      if (source !== "user") return;
+      socket.emit("send-changes", delta);
     };
-    quill.on('text-change', handler);
+    quill.on("text-change", handler);
 
-    return ()=>{
-      quill.off('text-change',handler);
-    }
-  },[socket, quill]);
+    return () => {
+      quill.off("text-change", handler);
+    };
+  }, [socket, quill]);
 
   const wrapperRef = useCallback((wrapper) => {
     if (wrapper == null) return;
     wrapper.innerHTML = "";
     const editor = document.createElement("div");
     wrapper.append(editor);
-    const q=new Quill(editor, { theme: "snow", modules: { toolbar: toolbarOptions } });
+    const q = new Quill(editor, {
+      theme: "snow",
+      modules: { toolbar: toolbarOptions },
+    });
     setQuill(q);
   }, []);
 
