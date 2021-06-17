@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "quill/dist/quill.snow.css";
 import Quill from "quill";
 import { io } from "socket.io-client";
@@ -24,20 +24,40 @@ const toolbarOptions = [
 
 function TextEditor() {
 
-  useEffect(()=>{
-    const socket=io("http://localhost:3001");
+  const [socket, setSocket] = useState();
+  const [quill, setQuill] = useState();
 
+  //for making connection with server
+  useEffect(()=>{
+    const s=io("http://localhost:3001");
+    setSocket(s);
     return()=>{
-      socket.disconnect();
+      s.disconnect();
     }
   },[]);
+
+  //for persisting change on files with same users
+  useEffect(()=>{
+    if(socket==null || quill ==null) return;
+
+    const handler = (delta, oldDelta, source) => {
+      if(source!=='user') return;
+      socket.emit('send-changes',delta);
+    };
+    quill.on('text-change', handler);
+
+    return ()=>{
+      quill.off('text-change',handler);
+    }
+  },[socket, quill]);
 
   const wrapperRef = useCallback((wrapper) => {
     if (wrapper == null) return;
     wrapper.innerHTML = "";
     const editor = document.createElement("div");
     wrapper.append(editor);
-    new Quill(editor, { theme: "snow", modules: { toolbar: toolbarOptions } });
+    const q=new Quill(editor, { theme: "snow", modules: { toolbar: toolbarOptions } });
+    setQuill(q);
   }, []);
 
   return <div className="container" ref={wrapperRef}></div>;
