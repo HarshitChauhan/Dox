@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import "quill/dist/quill.snow.css";
 import Quill from "quill";
 import { io } from "socket.io-client";
+import { useParams } from "react-router-dom";
 
 const toolbarOptions = [
   ["bold", "italic", "underline", "strike"], // toggled buttons
@@ -23,6 +24,7 @@ const toolbarOptions = [
 ];
 
 function TextEditor() {
+  const {id: documentId} =useParams();
   const [socket, setSocket] = useState();
   const [quill, setQuill] = useState();
 
@@ -64,6 +66,18 @@ function TextEditor() {
     };
   }, [socket, quill]);
 
+  // for bound data to user's document only
+  useEffect(()=>{
+    if(socket==null || quill==null) return;
+
+    socket.once("load-document", document=>{
+      quill.setContents(document);
+      quill.enable();
+    })
+    socket.emit('get-document',documentId);
+
+  },[socket,quill,documentId])
+
   const wrapperRef = useCallback((wrapper) => {
     if (wrapper == null) return;
     wrapper.innerHTML = "";
@@ -73,6 +87,8 @@ function TextEditor() {
       theme: "snow",
       modules: { toolbar: toolbarOptions },
     });
+    q.disable();
+    q.setText("Loading...");
     setQuill(q);
   }, []);
 
