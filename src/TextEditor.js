@@ -1,6 +1,7 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import "quill/dist/quill.snow.css";
 import Quill from "quill";
+import { io } from "socket.io-client";
 
 const toolbarOptions = [
   ["bold", "italic", "underline", "strike"], // toggled buttons
@@ -22,6 +23,15 @@ const toolbarOptions = [
 ];
 
 function TextEditor() {
+
+  useEffect(()=>{
+    const socket=io("http://localhost:3001");
+
+    return()=>{
+      socket.disconnect();
+    }
+  },[]);
+
   const wrapperRef = useCallback((wrapper) => {
     if (wrapper == null) return;
     wrapper.innerHTML = "";
