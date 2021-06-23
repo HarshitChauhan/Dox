@@ -99,6 +99,8 @@ function TextEditor() {
       theme: "snow",
       modules: { toolbar: toolbarOptions },
     });
+
+    //if document is loading...
     q.disable();
     q.setText("Loading...");
     setQuill(q);
