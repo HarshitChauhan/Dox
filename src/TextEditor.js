@@ -24,13 +24,13 @@ const toolbarOptions = [
 ];
 
 function TextEditor() {
-  const {id: documentId} =useParams();
+  const { id: documentId } = useParams();
   const [socket, setSocket] = useState();
   const [quill, setQuill] = useState();
 
   //for making connection with server
   useEffect(() => {
-    const s = io("http://localhost:3001");
+    const s = io("https://dox-server.herokuapp.com");
     setSocket(s);
     return () => {
       s.disconnect();
@@ -67,30 +67,28 @@ function TextEditor() {
   }, [socket, quill]);
 
   // for bound data to user's document only
-  useEffect(()=>{
-    if(socket==null || quill==null) return;
-
-    socket.once("load-document", document=>{
-      quill.setContents(document);
-      quill.enable();
-    })
-    socket.emit('get-document',documentId);
-
-  },[socket,quill,documentId])
-
-  //for saving content of file
-  useEffect(()=>{
+  useEffect(() => {
     if (socket == null || quill == null) return;
 
-    const interval= setInterval(() => {
-      socket.emit('save-document', quill.getContents());
+    socket.once("load-document", (document) => {
+      quill.setContents(document);
+      quill.enable();
+    });
+    socket.emit("get-document", documentId);
+  }, [socket, quill, documentId]);
+
+  //for saving content of file
+  useEffect(() => {
+    if (socket == null || quill == null) return;
+
+    const interval = setInterval(() => {
+      socket.emit("save-document", quill.getContents());
     }, 2000);
 
-    return ()=>{
+    return () => {
       clearInterval(interval);
-    }
-
-  },[socket,quill])
+    };
+  }, [socket, quill]);
 
   const wrapperRef = useCallback((wrapper) => {
     if (wrapper == null) return;
