@@ -31,7 +31,7 @@ function TextEditor() {
   //for making connection with server
   useEffect(() => {
     // const s = io("https://dox-server.herokuapp.com");
-    const s = io(`${process.env.REACT_APP_BACKEND_URL}`);
+    const s = io("https://doxserver.herokuapp.com");
     setSocket(s);
     return () => {
       s.disconnect();
