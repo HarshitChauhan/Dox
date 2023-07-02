@@ -31,8 +31,8 @@ function TextEditor() {
   //for making connection with server
   useEffect(() => {
     // const s = io("https://dox-server.herokuapp.com");
-    const s = io("http://localhost:3001",{transports: ['websocket'],upgrade:false});
-    // const s = io("https://dox-server-9svu.onrender.com",{transports: ['websocket'],upgrade:false});
+    // const s = io("http://localhost:3001",{transports: ['websocket'],upgrade:false});
+    const s = io(process.env.REACT_APP_BACKEND_URL, {transports: ['websocket'],upgrade:false});
     setSocket(s);
     return () => {
       s.disconnect();
