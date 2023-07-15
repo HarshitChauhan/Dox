@@ -92,6 +92,29 @@ function TextEditor() {
     };
   }, [socket, quill]);
 
+  useEffect(() => {
+    if (socket == null) return;
+    const handleDisconnect = () => {
+      console.log("Socket connection has been Disconnected! 💥");
+    };
+    const handleConnect = () => {
+      console.log("Socket connection has been Created! 🎉");
+    };
+    const handleReconnect = () => {
+      console.log("Socket connection has been Reconnected! 🎊");
+    };
+    socket.on("disconnect", handleDisconnect); 
+    socket.on("connect", handleConnect); 
+    socket.on("reconnect", handleReconnect); 
+    return () => {
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect", handleConnect);
+      socket.off("reconnect", handleReconnect);
+    };
+  }, [socket]);
+
+  
+
   const wrapperRef = useCallback((wrapper) => {
     if (wrapper == null) return;
     wrapper.innerHTML = "";
@@ -99,8 +122,10 @@ function TextEditor() {
     wrapper.append(editor);
     const q = new Quill(editor, {
       theme: "snow",
+      // theme: "bubble",
       modules: { toolbar: toolbarOptions },
     });
+
 
     //if document is loading...
     q.disable();
